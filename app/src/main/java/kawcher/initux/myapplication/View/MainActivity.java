@@ -9,24 +9,32 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import kawcher.initux.myapplication.Adapter.Adapter;
 import kawcher.initux.myapplication.Api.ApiResponse;
-import kawcher.initux.myapplication.Model.MainResponseModel;
-import kawcher.initux.myapplication.Model.Server;
 import kawcher.initux.myapplication.R;
 import kawcher.initux.myapplication.Util.SharedPrefManager;
 import okhttp3.OkHttpClient;
@@ -39,7 +47,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private List<Server>ipList;
+    private List<MainActivity.Server>ipList;
     private Adapter adapter;
     private SharedPrefManager sharedPrefManager;
     private Button createFileBtn,createFolderBtn,deleteFileBtn,deleteFolderBtn;
@@ -55,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE
                 , Manifest.permission.READ_EXTERNAL_STORAGE}, PackageManager.PERMISSION_GRANTED);
 
+
+
         init();
         loadData();
         onClickListener();
@@ -65,9 +75,28 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    private void loadRVData() {
 
-       ipList=sharedPrefManager.getList();
+
+    private void loadRVData() throws JSONException {
+
+
+       String value=sharedPrefManager.getList();
+        JSONObject jsonObject = new JSONObject(value);
+
+
+        ipList.clear();
+
+        JSONArray jsonArray = jsonObject.getJSONArray("Servers");
+        for (int i = 0; i < jsonArray.length(); i++) {
+            String vpnIp = jsonArray.getJSONObject(i).getString("VpnIp");
+            String password = jsonArray.getJSONObject(i).getString("Password");
+            String proxyIp = jsonArray.getJSONObject(i).getString("ProxyIp");
+
+
+            Server server=new Server(vpnIp,proxyIp,password);
+           ipList.add(server);
+
+        }
         LinearLayoutManager llm=new LinearLayoutManager(MainActivity.this);
         recyclerView.setLayoutManager(llm);
         adapter=new Adapter(ipList,MainActivity.this);
@@ -95,24 +124,35 @@ public class MainActivity extends AppCompatActivity {
         ApiResponse apiResponse = retrofit.create(ApiResponse.class);
 
 
-        Call<MainResponseModel> call = apiResponse.getAllData();
+        Call<JsonObject> call = apiResponse.getAllData();
 
-        call.enqueue(new Callback<MainResponseModel>() {
+        call.enqueue(new Callback<JsonObject>() {
             @Override
-            public void onResponse(Call<MainResponseModel> call, Response<MainResponseModel> response) {
+            public void onResponse(Call<JsonObject> call, Response<JsonObject> response) {
 
                 if(response.isSuccessful()){
 
-                    Gson gson = new Gson();
-                    String json = gson.toJson(response.body().getServers());
-                    sharedPrefManager.setList(json);
-                   loadRVData();
+
+                    JSONObject jsonObject = null;
+                    try {
+                        jsonObject = new JSONObject(String.valueOf(response.body()));
+                        sharedPrefManager.setList(jsonObject.toString());
+                        loadRVData();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+
+
+
 
                 }
             }
 
+
+
             @Override
-            public void onFailure(Call<MainResponseModel> call, Throwable t) {
+            public void onFailure(Call<JsonObject> call, Throwable t) {
                 Toast.makeText(MainActivity.this, ""+t.getMessage(), Toast.LENGTH_SHORT).show();
                 Log.e("TAG", "onFailure: "+t.getMessage() );
 
@@ -121,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void init() {
+        ipList=new ArrayList<>();
         recyclerView=findViewById(R.id.rv);
         sharedPrefManager=SharedPrefManager.getInstance(MainActivity.this);
         createFileBtn=findViewById(R.id.create_file_button);
@@ -180,6 +221,50 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    public static class Server {
+        @SerializedName("VpnIp")
+        @Expose
+        private String vpnIp;
+        @SerializedName("ProxyIp")
+        @Expose
+        private String proxyIp;
+        @SerializedName("Password")
+        @Expose
+        private String password;
+
+
+        public Server(String vpnIp, String proxyIp, String password) {
+            this.vpnIp = vpnIp;
+            this.proxyIp = proxyIp;
+            this.password = password;
+        }
+
+        public String getVpnIp() {
+            return vpnIp;
+        }
+
+        public void setVpnIp(String vpnIp) {
+            this.vpnIp = vpnIp;
+        }
+
+        public String getProxyIp() {
+            return proxyIp;
+        }
+
+        public void setProxyIp(String proxyIp) {
+            this.proxyIp = proxyIp;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public void setPassword(String password) {
+            this.password = password;
+        }
+    }
+
 
 
 }

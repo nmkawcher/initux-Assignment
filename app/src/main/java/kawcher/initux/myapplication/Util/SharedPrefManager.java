@@ -6,10 +6,14 @@ import android.content.SharedPreferences;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
-import kawcher.initux.myapplication.Model.Server;
 
 public class SharedPrefManager {
 
@@ -41,16 +45,14 @@ public class SharedPrefManager {
 
     }
 
-    public List<Server> getList(){
+
+    public String getList()  {
         SharedPreferences sharedPrefManager=mCtx.getSharedPreferences(LIST,Context.MODE_PRIVATE);
         String value= sharedPrefManager.getString(LIST_KEY,"null");
-        Gson gson = new Gson();
-        Type type = new TypeToken<List<Server>>(){}.getType();
-        List<Server>ipList = gson.fromJson(value, type);
 
-        return ipList;
+
+        return value;
     }
-
 
 
 

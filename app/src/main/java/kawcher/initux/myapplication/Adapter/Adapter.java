@@ -14,19 +14,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.List;
 
-import kawcher.initux.myapplication.Model.Server;
+
 import kawcher.initux.myapplication.R;
+import kawcher.initux.myapplication.View.MainActivity;
 
 import static android.content.Context.CLIPBOARD_SERVICE;
 
 public class Adapter extends RecyclerView.Adapter<Adapter.MyHolder> {
 
-    List<Server>list;
+    List<MainActivity.Server>list;
     Context context;
     private ClipboardManager clipboardManager;
     private ClipData clipData;
 
-    public Adapter(List<Server> list, Context context) {
+    public Adapter(List<MainActivity.Server> list, Context context) {
         this.list = list;
         this.context = context;
     }
@@ -41,7 +42,7 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyHolder> {
 
     @Override
     public void onBindViewHolder(@NonNull MyHolder holder, int position) {
-        Server server=list.get(position);
+        MainActivity.Server server=list.get(position);
         holder.ipTV.setText(server.getVpnIp());
         holder.passwordTV.setText(server.getPassword());
 
