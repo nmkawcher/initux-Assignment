@@ -223,14 +223,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public static class Server {
-        @SerializedName("VpnIp")
-        @Expose
+
         private String vpnIp;
-        @SerializedName("ProxyIp")
-        @Expose
         private String proxyIp;
-        @SerializedName("Password")
-        @Expose
         private String password;
 
 

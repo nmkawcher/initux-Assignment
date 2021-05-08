@@ -47,12 +47,12 @@ public class Adapter extends RecyclerView.Adapter<Adapter.MyHolder> {
         holder.passwordTV.setText(server.getPassword());
 
         holder.ipIv.setOnClickListener(v -> {
-            String ip=list.get(0).getVpnIp();
+            String ip=list.get(position).getVpnIp();
            copyDataToClipBoard(ip);
         });
 
         holder.passIv.setOnClickListener(v -> {
-            String password=list.get(0).getPassword();
+            String password=list.get(position).getPassword();
             copyDataToClipBoard(password);
 
         });
